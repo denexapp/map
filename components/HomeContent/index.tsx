@@ -1,6 +1,6 @@
 import { Textarea, Toast } from "@skbkontur/react-ui";
 import Head from "next/head";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import useSpreadsheetData from "../../hooks/useSpreadsheetData";
 import Container from "../Container";
 import Layer from "../Layer";
@@ -9,6 +9,7 @@ import Marker from "../Marker";
 
 const HomeContent: React.FC = () => {
   const mapRef = useRef<MapRef>(null);
+  const [initialCenter] = useState(new window.google.maps.LatLng(55, 37))
 
   const [{ isLoading, places }, setSpreadsheetData] = useSpreadsheetData(
     () => {
@@ -48,7 +49,7 @@ const HomeContent: React.FC = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layer>
-        <Map ref={mapRef} streetViewControl={false} mapTypeControl={false}>
+        <Map ref={mapRef} streetViewControl={false} mapTypeControl={false} center={initialCenter} zoom={3}>
           {markers}
         </Map>
       </Layer>
