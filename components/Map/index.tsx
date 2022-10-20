@@ -1,15 +1,19 @@
 import {
   Children,
   cloneElement,
+  ComponentPropsWithRef,
+  forwardRef,
   isValidElement,
+  PropsWithRef,
   useEffect,
+  useImperativeHandle,
   useRef,
   useState,
 } from "react";
 import { useDeepCompareEffectForMaps } from "./utils";
-import styles from './styles.module.css'
+import styles from "./styles.module.css";
 
-interface MapProps extends google.maps.MapOptions {
+export interface MapProps extends google.maps.MapOptions {
   onClick?: (e: google.maps.MapMouseEvent) => void;
   onIdle?: (map: google.maps.Map) => void;
   children?:
@@ -17,49 +21,47 @@ interface MapProps extends google.maps.MapOptions {
     | React.ReactElement<google.maps.MarkerOptions>;
 }
 
-const Map: React.FC<MapProps> = ({ onClick, onIdle, children, ...options }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const [map, setMap] = useState<google.maps.Map>();
+export interface MapRef {
+  fitBounds: google.maps.Map["fitBounds"];
+}
 
-  useEffect(() => {
-    if (ref.current && !map) {
-      setMap(new window.google.maps.Map(ref.current, {}));
-    }
-  }, [ref, map]);
+const Map = forwardRef<MapRef, MapProps>(
+  ({ onClick, onIdle, children, ...options }, mapRef) => {
+    const divRef = useRef<HTMLDivElement>(null);
+    const [map, setMap] = useState<google.maps.Map>();
 
-  useDeepCompareEffectForMaps(() => {
-    if (map) {
-      map.setOptions(options);
-    }
-  }, [map, options]);
+    useImperativeHandle(
+      mapRef,
+      () => ({
+        fitBounds: (...args) => map?.fitBounds(...args),
+      }),
+      [map]
+    );
 
-  useEffect(() => {
-    if (map) {
-      ["click", "idle"].forEach((eventName) =>
-        google.maps.event.clearListeners(map, eventName)
-      );
-
-      if (onClick) {
-        map.addListener("click", onClick);
+    useEffect(() => {
+      if (divRef.current && !map) {
+        setMap(new window.google.maps.Map(divRef.current, {}));
       }
+    }, [divRef, map]);
 
-      if (onIdle) {
-        map.addListener("idle", () => onIdle(map));
+    useDeepCompareEffectForMaps(() => {
+      if (map) {
+        map.setOptions(options);
       }
-    }
-  }, [map, onClick, onIdle]);
+    }, [map, options]);
 
-  return (
-    <>
-      <div ref={ref} className={styles.map} />
-      {Children.map(children, (child) => {
-        if (isValidElement(child)) {
-          // set the map prop on the child component
-          return cloneElement(child, { map });
-        }
-      })}
-    </>
-  );
-};
+    return (
+      <>
+        <div ref={divRef} className={styles.map} />
+        {Children.map(children, (child) => {
+          if (isValidElement(child)) {
+            // set the map prop on the child component
+            return cloneElement(child, { map });
+          }
+        })}
+      </>
+    );
+  }
+);
 
 export default Map;
