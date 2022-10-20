@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { JsonDecoder } from "ts.data.json";
+import { sleep } from "../utils/sleep";
 import useGetGeocoder from "./useGeocoder";
 
 export interface SpreadSheetData {
@@ -64,6 +65,7 @@ const useSpreadsheetData = (
       let response: google.maps.GeocoderResponse;
       try {
         response = await getGeocoder().geocode({ address });
+        await sleep(500);
       } catch {
         onError(`: ${address}`);
         throw new Error();
