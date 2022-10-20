@@ -28,7 +28,7 @@ const spreasheetRowDecoder: JsonDecoder.Decoder<SpreadsheetRow> =
 
 const useSpreadsheetData = (
   onSuccess: () => void,
-  onError: () => void
+  onError: (message: string) => void
 ): [SpreadSheetData, SetSpreadsheetData] => {
   const [places, setPlaces] = useState<Array<Place> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -39,7 +39,10 @@ const useSpreadsheetData = (
     places,
   };
 
-  const getLocations = async (rows: Array<Row>): Promise<Array<Place>> => {
+  const getLocations = async (
+    rows: Array<Row>,
+    onError: (message: string) => void
+  ): Promise<Array<Place>> => {
     const uniqueAddressesWithNames = new Map<string, Array<string>>();
 
     rows.forEach((row) => {
@@ -58,7 +61,13 @@ const useSpreadsheetData = (
 
     for (const uniqueAddressWithNames of uniqueAddressesWithNames) {
       const [address, names] = uniqueAddressWithNames;
-      const response = await getGeocoder().geocode({ address });
+      let response: google.maps.GeocoderResponse;
+      try {
+        response = await getGeocoder().geocode({ address });
+      } catch {
+        onError(`: ${address}`);
+        throw new Error();
+      }
       const placeId = response.results[0].place_id;
       const formattedAddress = response.results[0].formatted_address;
       const { location } = response.results[0].geometry;
@@ -92,7 +101,7 @@ const useSpreadsheetData = (
         const spreadsheetRow = spreasheetRowDecoder.decode(unvalidatedRow);
 
         if (!spreadsheetRow.isOk()) {
-          onError();
+          onError(`: ${unvalidatedRow}`);
           return;
         }
 
@@ -104,12 +113,11 @@ const useSpreadsheetData = (
       }
 
       setIsLoading(true);
-      getLocations(rows)
+      getLocations(rows, onError)
         .then((places) => {
           setPlaces(places);
           onSuccess();
         })
-        .catch(() => onError())
         .finally(() => setIsLoading(false));
     },
     [onError]

@@ -15,8 +15,8 @@ const HomeContent: React.FC = () => {
     () => {
       Toast.push("Location data is loaded");
     },
-    () => {
-      Toast.push("Can't fetch location data");
+    (message: string) => {
+      Toast.push(`Can't fetch location data ${message}`);
     }
   );
 
