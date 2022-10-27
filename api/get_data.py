@@ -13,7 +13,7 @@ class handler(BaseHTTPRequestHandler):
         GoogleSheetsApiKey = os.environ['GOOGLE_SHEETS_API_KEY']
         ranges = ['A:C']
 
-        spreadsheet_id = str(self.rfile.read(int(self.headers.get('Content-Length'))))
+        spreadsheet_id = (self.rfile.read(int(self.headers.get('Content-Length')))).decode('utf-8')
         service = build('sheets', 'v4', developerKey=GoogleSheetsApiKey)
         request = service.spreadsheets().values().batchGet(
             spreadsheetId=spreadsheet_id,
