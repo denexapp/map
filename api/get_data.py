@@ -1,6 +1,6 @@
 import json
 import os
-import pandas as pd
+from pandas import DataFrame
 from googleapiclient.discovery import build
 from http.server import BaseHTTPRequestHandler
 
@@ -23,7 +23,7 @@ class handler(BaseHTTPRequestHandler):
         )
         response = request.execute()
         response_values = response.get('valueRanges', list())[0].get('values', list())
-        response_df = pd.DataFrame(response_values[1:], columns=response_values[0]).rename(columns={'ФИО': 'name'})
+        response_df = DataFrame(response_values[1:], columns=response_values[0]).rename(columns={'ФИО': 'name'})
         response_df['address'] = response_df['Страна'].str.lower().str.strip() + ' ' + \
             response_df['Город'].str.lower().str.strip()
         result = json.dumps({'values': response_df[['name', 'address']].to_dict('records')}, ensure_ascii=False)
