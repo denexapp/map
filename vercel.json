@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/**/*.py": {
-      "excludeFiles": "{+(.vercel|.next|_next|node_modules|public|assets|components|pages|utils|styles)/**,package-lock.json,README.md}"
+      "excludeFiles": "{+(.vercel|.next|_next|node_modules|public|assets|static|components|pages|utils|styles)/**,package-lock.json,README.md}"
     }
   }
 }
