@@ -137,8 +137,6 @@ const useSpreadsheetData = (
         return;
       }
 
-      await sleep(1000);
-
       try {
         const response = await fetch("/api/get_data", {
           method: "POST",
@@ -165,11 +163,16 @@ const useSpreadsheetData = (
   );
 
   useEffect(() => {
+    try {
+      getGeocoder()
+    } catch (error) {
+      return
+    }
     const savedSheetUrl = localStorage.getItem("savedSheetUrl");
     if (savedSheetUrl === null) return;
     onUseSavedLink();
     setSpreadsheetData(savedSheetUrl);
-  }, []);
+  }, [getGeocoder]);
 
   return [spreadSheetData, setSpreadsheetData];
 };
