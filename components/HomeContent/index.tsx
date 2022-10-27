@@ -16,7 +16,7 @@ const HomeContent: React.FC = () => {
       Toast.push("Location data is loaded");
     },
     (message: string) => {
-      Toast.push(`Can't fetch location data ${message}`);
+      Toast.push(`Can't fetch location data${message}`);
     }
   );
 
@@ -33,7 +33,7 @@ const HomeContent: React.FC = () => {
 
   const textAreaPlaceholder = isLoading
     ? "Loading..."
-    : "Paste data from the spreadsheet here";
+    : "Share the sheet to anyone and paste the link here";
 
   useEffect(() => {
     const bounds = new google.maps.LatLngBounds();
@@ -55,6 +55,7 @@ const HomeContent: React.FC = () => {
       </Layer>
       <Layer padding direction="column">
         <Textarea
+          width={360}
           disabled={isLoading}
           onValueChange={(value) => setSpreadsheetData(value)}
           rows={1}

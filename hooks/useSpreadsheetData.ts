@@ -17,15 +17,42 @@ interface Place {
   names: Array<string>;
 }
 
-type Row = [name: string, address: string];
+type Row = { name: string; address: string };
 
-type SpreadsheetRow = [name: string, country: string, city: string];
+interface GetDataResponse {
+  values: Array<Row>;
+}
 
-const spreasheetRowDecoder: JsonDecoder.Decoder<SpreadsheetRow> =
-  JsonDecoder.tuple(
-    [JsonDecoder.string, JsonDecoder.string, JsonDecoder.string],
-    "Row"
+const getDataResponseDecoder: JsonDecoder.Decoder<GetDataResponse> =
+  JsonDecoder.object<GetDataResponse>(
+    {
+      values: JsonDecoder.array(
+        JsonDecoder.object(
+          {
+            address: JsonDecoder.string,
+            name: JsonDecoder.string,
+          },
+
+          "Row"
+        ),
+        "values"
+      ),
+    },
+    "GetDataResponse"
   );
+
+const getSheetId = (data: string): string | null => {
+  const url = new URL(data);
+  if (url.protocol !== "https:") return null;
+  if (url.hostname !== "docs.google.com") return null;
+  if (url.port !== "443" && url.port !== "") return null;
+  const parts = url.pathname.split("/");
+  if (parts.length < 4) return null;
+  if (parts[0] !== "") return null;
+  if (parts[1] !== "spreadsheets") return null;
+  if (parts[2] !== "d") return null;
+  return parts[3];
+};
 
 const useSpreadsheetData = (
   onSuccess: () => void,
@@ -47,7 +74,7 @@ const useSpreadsheetData = (
     const uniqueAddressesWithNames = new Map<string, Array<string>>();
 
     rows.forEach((row) => {
-      const [name, address] = row;
+      const { name, address } = row;
 
       const names = uniqueAddressesWithNames.get(address);
 
@@ -91,30 +118,33 @@ const useSpreadsheetData = (
   };
 
   const setSpreadsheetData: SetSpreadsheetData = useCallback(
-    (data) => {
-      const unvalidatedRows = data
-        .trim()
-        .split("\n")
-        .map((row) => row.split("\t").map((rowPart) => rowPart.trim()));
+    async (data) => {
+      setIsLoading(true);
 
-      const rows: Array<Row> = [];
+      let rows: Array<Row>;
 
-      for (const unvalidatedRow of unvalidatedRows) {
-        const spreadsheetRow = spreasheetRowDecoder.decode(unvalidatedRow);
+      const sheetId = getSheetId(data);
 
-        if (!spreadsheetRow.isOk()) {
-          onError(`: ${unvalidatedRow}`);
-          return;
-        }
-
-        const [name, country, city] = spreadsheetRow.value;
-
-        const row: Row = [name, `${country} ${city}`];
-
-        rows.push(row);
+      if (sheetId === null) {
+        setIsLoading(false);
+        onError(": incorrect sheet link");
+        return;
       }
 
-      setIsLoading(true);
+      try {
+        const response = await fetch("/api/get_data", {
+          method: "POST",
+          body: sheetId,
+        });
+        const getDataResponse = await response.json();
+        rows = (await getDataResponseDecoder.decodeToPromise(getDataResponse))
+          .values;
+      } catch {
+        setIsLoading(false);
+        onError(": failed to get or parse data from the server");
+        return;
+      }
+
       getLocations(rows, onError)
         .then((places) => {
           setPlaces(places);
