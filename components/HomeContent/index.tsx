@@ -1,4 +1,3 @@
-import { Textarea, Toast } from "@skbkontur/react-ui";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 import useSpreadsheetData from "../../hooks/useSpreadsheetData";
@@ -13,10 +12,10 @@ const HomeContent: React.FC = () => {
 
   const [{ isLoading, places }, setSpreadsheetData] = useSpreadsheetData(
     () => {
-      Toast.push("Location data is loaded");
+      console.log("Location data is loaded")
     },
     (message: string) => {
-      Toast.push(`Can't fetch location data ${message}`);
+      console.log(`Can't fetch location data ${message}`)
     }
   );
 
@@ -54,14 +53,14 @@ const HomeContent: React.FC = () => {
         </Map>
       </Layer>
       <Layer padding direction="column">
-        <Textarea
+        <textarea
           disabled={isLoading}
-          onValueChange={(value) => setSpreadsheetData(value)}
+          onChange={(event) => setSpreadsheetData(event.target.value)}
           rows={1}
-          resize="none"
           placeholder={textAreaPlaceholder}
           value=""
-        />
+        >
+        </textarea>
       </Layer>
     </Container>
   );
