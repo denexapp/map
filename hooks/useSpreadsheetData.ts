@@ -42,7 +42,12 @@ const getDataResponseDecoder: JsonDecoder.Decoder<GetDataResponse> =
   );
 
 const getSheetId = (data: string): string | null => {
-  const url = new URL(data);
+  let url: URL;
+  try {
+    url = new URL(data);
+  } catch {
+    return null;
+  }
   if (url.protocol !== "https:") return null;
   if (url.hostname !== "docs.google.com") return null;
   if (url.port !== "443" && url.port !== "") return null;
