@@ -1,0 +1,2 @@
+pandas~=1.4.3
+google-api-python-client~=2.65.0
