@@ -137,6 +137,8 @@ const useSpreadsheetData = (
         return;
       }
 
+      await sleep(1000);
+
       try {
         const response = await fetch("/api/get_data", {
           method: "POST",
