@@ -13,7 +13,10 @@ const HomeContent: React.FC = () => {
 
   const [{ isLoading, places }, setSpreadsheetData] = useSpreadsheetData(
     () => {
-      Toast.push("Location data is loaded");
+      Toast.push("Location data is loaded, sheet url is saved in your browser");
+    },
+    () => {
+      Toast.push("Loading data using saved sheet url");
     },
     (message: string) => {
       Toast.push(`Can't fetch location data${message}`);

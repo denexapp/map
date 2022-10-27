@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { JsonDecoder } from "ts.data.json";
 import { sleep } from "../utils/sleep";
 import useGetGeocoder from "./useGeocoder";
@@ -61,6 +61,7 @@ const getSheetId = (data: string): string | null => {
 
 const useSpreadsheetData = (
   onSuccess: () => void,
+  onUseSavedLink: () => void,
   onError: (message: string) => void
 ): [SpreadSheetData, SetSpreadsheetData] => {
   const [places, setPlaces] = useState<Array<Place> | null>(null);
@@ -152,6 +153,7 @@ const useSpreadsheetData = (
 
       getLocations(rows, onError)
         .then((places) => {
+          localStorage.setItem("savedSheetUrl", data);
           setPlaces(places);
           onSuccess();
         })
@@ -159,6 +161,13 @@ const useSpreadsheetData = (
     },
     [onError]
   );
+
+  useEffect(() => {
+    const savedSheetUrl = localStorage.getItem("savedSheetUrl");
+    if (savedSheetUrl === null) return;
+    onUseSavedLink();
+    setSpreadsheetData(savedSheetUrl);
+  }, []);
 
   return [spreadSheetData, setSpreadsheetData];
 };
