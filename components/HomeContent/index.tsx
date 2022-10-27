@@ -16,7 +16,7 @@ const HomeContent: React.FC = () => {
       Toast.push("Location data is loaded, sheet url is saved in your browser");
     },
     () => {
-      Toast.push("Loading data using saved sheet url");
+      Toast.push("Loading data using sheet url saved in your browser");
     },
     (message: string) => {
       Toast.push(`Can't fetch location data${message}`);
