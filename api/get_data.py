@@ -21,8 +21,12 @@ class handler(BaseHTTPRequestHandler):
         )
         response = request.execute()
         response_values = response.get('valueRanges', list())[0].get('values', list())
-        result = \
-            [{'name': x[0], 'address': x[1].lower().strip() + ' ' + x[2].lower().strip()} for x in response_values[1:]]
-        result = json.dumps({"values": result}, ensure_ascii=False)
+
+        # One name can occur more than once, in which case we use the last value - this is a temporary current location
+        name2address = dict()
+        for name, country, city in response_values[1:]:
+            name2address[name] = country.lower().strip() + ' ' + city.lower().strip()
+        result = [{'name': name, 'address': address} for name, address in name2address.items()]
+        result = json.dumps({'values': result}, ensure_ascii=False)
         self.wfile.write(result.encode())
         return
