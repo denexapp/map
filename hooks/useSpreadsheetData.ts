@@ -95,18 +95,17 @@ const useSpreadsheetData = (
 
     for (const uniqueAddressWithNames of uniqueAddressesWithNames) {
       const [address, names] = uniqueAddressWithNames;
-      let response: google.maps.GeocoderResponse;
+      let response: google.maps.GeocoderResponse | undefined;
       let tries = 5;
       while (tries > 0) {
         try {
+          tries -= 1;
           response = await getGeocoder().geocode({ address });
           await sleep(500);
           break;
-        } catch {
-          tries -= 1;
-        }
+        } catch { }
       }
-      if (tries === 0) {
+      if (response === undefined) {
         onError(`: ${address}`);
         throw new Error();
       }
