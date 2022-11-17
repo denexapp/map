@@ -95,11 +95,17 @@ const useSpreadsheetData = (
 
     for (const uniqueAddressWithNames of uniqueAddressesWithNames) {
       const [address, names] = uniqueAddressWithNames;
-      let response: google.maps.GeocoderResponse;
-      try {
-        response = await getGeocoder().geocode({ address });
-        await sleep(500);
-      } catch {
+      let response: google.maps.GeocoderResponse | undefined;
+      let tries = 5;
+      while (tries > 0) {
+        try {
+          tries -= 1;
+          response = await getGeocoder().geocode({ address });
+          await sleep(500);
+          break;
+        } catch { }
+      }
+      if (response === undefined) {
         onError(`: ${address}`);
         throw new Error();
       }
@@ -164,9 +170,9 @@ const useSpreadsheetData = (
 
   useEffect(() => {
     try {
-      getGeocoder()
+      getGeocoder();
     } catch (error) {
-      return
+      return;
     }
     const savedSheetUrl = localStorage.getItem("savedSheetUrl");
     if (savedSheetUrl === null) return;
