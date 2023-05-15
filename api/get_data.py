@@ -6,7 +6,7 @@ from http.server import BaseHTTPRequestHandler
 
 
 class handler(BaseHTTPRequestHandler):
-    def normalize_string(input_string):
+    def normalize_string(self, input_string):
         # Trim leading and trailing spaces
         trimmed_string = input_string.strip()
         # Remove repeating spaces
